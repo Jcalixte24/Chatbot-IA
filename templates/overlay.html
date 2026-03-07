@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Assistant IA Institut</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --v: #6B35C8; --vl: #8B55E8; --vp: #F0EAFF;
+      --w: #fff; --bg: #F8F7FC; --b: #E4DFF5;
+      --gm: #8E88A8; --gd: #4A4560; --t: #1C1830;
+    }
+    html, body { height:100%; font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--t); }
+    body { display:flex; flex-direction:column; height:100vh; overflow:hidden; border-radius:16px; }
+
+    header {
+      background:var(--v); padding:14px 16px;
+      display:flex; align-items:center; gap:10px; flex-shrink:0;
+    }
+    .h-icon { width:30px; height:30px; background:rgba(255,255,255,0.2); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+    .h-icon svg { width:16px; height:16px; fill:white; }
+    .h-title { color:white; font-size:14px; font-weight:600; }
+    .h-sub { color:rgba(255,255,255,0.7); font-size:11px; }
+
+    #chat { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:12px; scroll-behavior:smooth; }
+    #chat::-webkit-scrollbar { width:3px; }
+    #chat::-webkit-scrollbar-thumb { background:var(--b); border-radius:3px; }
+
+    #inner { display:flex; flex-direction:column; gap:12px; }
+
+    #welcome { text-align:center; padding:20px 10px; }
+    #welcome h3 { font-size:15px; font-weight:600; margin-bottom:6px; }
+    #welcome p { font-size:12px; color:var(--gm); margin-bottom:14px; line-height:1.5; }
+    .chips { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; }
+    .chip { background:var(--w); border:1.5px solid var(--b); color:var(--gd); font-family:'DM Sans',sans-serif; font-size:11px; padding:6px 12px; border-radius:20px; cursor:pointer; transition:all 0.15s; }
+    .chip:hover { border-color:var(--v); color:var(--v); background:var(--vp); }
+
+    .msg { display:flex; gap:8px; align-items:flex-end; }
+    .msg.user { flex-direction:row-reverse; }
+    .av { width:26px; height:26px; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .msg.bot .av { background:var(--v); }
+    .msg.user .av { background:var(--b); }
+    .av svg { width:13px; height:13px; }
+    .msg.bot .av svg { fill:white; }
+    .msg.user .av svg { fill:var(--gm); }
+    .bbl { padding:10px 13px; border-radius:14px; font-size:13px; line-height:1.6; max-width:82%; }
+    .msg.bot .bbl { background:var(--w); border:1px solid var(--b); border-bottom-left-radius:3px; }
+    .msg.user .bbl { background:var(--v); color:white; border-bottom-right-radius:3px; }
+
+    .dots { display:flex; gap:4px; padding:3px 0; align-items:center; }
+    .dots span { width:6px; height:6px; border-radius:50%; background:var(--b); animation:dot 1.2s ease-in-out infinite; }
+    .dots span:nth-child(2) { animation-delay:0.2s; }
+    .dots span:nth-child(3) { animation-delay:0.4s; }
+    @keyframes dot { 0%,60%,100%{transform:scale(1);opacity:0.4} 30%{transform:scale(1.4);opacity:1;background:var(--v)} }
+
+    #bar { background:var(--w); border-top:1px solid var(--b); padding:10px 12px; flex-shrink:0; }
+    #box { display:flex; align-items:flex-end; gap:8px; background:var(--bg); border:1.5px solid var(--b); border-radius:12px; padding:8px 8px 8px 13px; transition:border-color 0.2s; }
+    #box:focus-within { border-color:var(--v); background:var(--w); }
+    #inp { flex:1; background:transparent; border:none; outline:none; font-family:'DM Sans',sans-serif; font-size:13px; color:var(--t); resize:none; max-height:80px; line-height:1.5; }
+    #inp::placeholder { color:var(--b); }
+    #sbtn { width:32px; height:32px; background:var(--v); border:none; border-radius:8px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.15s; }
+    #sbtn:hover { background:var(--vl); }
+    #sbtn:disabled { background:var(--b); cursor:not-allowed; }
+    #sbtn svg { width:14px; height:14px; fill:white; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="h-icon">
+      <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+    </div>
+    <div>
+      <div class="h-title">Assistant IA Institut</div>
+      <div class="h-sub">Pose ta question</div>
+    </div>
+  </header>
+
+  <div id="chat">
+    <div id="inner">
+      <div id="welcome">
+        <h3>Bonjour !</h3>
+        <p>Je suis l'assistant de l'IA Institut.<br>Comment puis-je vous aider ?</p>
+        <div class="chips" id="suggestions">
+          <button class="chip" data-q="Quels programmes sont disponibles ?">Les programmes</button>
+          <button class="chip" data-q="Comment candidater ?">Candidater</button>
+          <button class="chip" data-q="Qui contacter a l'ecole ?">Contacts</button>
+          <button class="chip" data-q="Ou se trouve l'ecole ?">Acces</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="bar">
+    <div id="box">
+      <textarea id="inp" placeholder="Votre question..." rows="1"></textarea>
+      <button id="sbtn">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    var inner = document.getElementById("inner");
+    var chat  = document.getElementById("chat");
+    var inp   = document.getElementById("inp");
+    var sbtn  = document.getElementById("sbtn");
+    var gone  = false;
+
+    document.querySelectorAll(".chip").forEach(function(b) {
+      b.addEventListener("click", function() { inp.value = b.getAttribute("data-q"); send(); });
+    });
+    sbtn.addEventListener("click", send);
+    inp.addEventListener("keydown", function(e) {
+      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+    });
+    inp.addEventListener("input", function() {
+      inp.style.height = "auto";
+      inp.style.height = Math.min(inp.scrollHeight, 80) + "px";
+    });
+
+    function rmWelcome() {
+      if (!gone) { var w = document.getElementById("welcome"); if (w) w.remove(); gone = true; }
+    }
+
+    function botAv() {
+      var d = document.createElement("div"); d.className = "av";
+      d.innerHTML = '<svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>';
+      return d;
+    }
+    function usrAv() {
+      var d = document.createElement("div"); d.className = "av";
+      d.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>';
+      return d;
+    }
+
+    function addMsg(text, isUser) {
+      rmWelcome();
+      var row = document.createElement("div"); row.className = "msg " + (isUser ? "user" : "bot");
+      var bbl = document.createElement("div"); bbl.className = "bbl";
+      if (isUser) { bbl.textContent = text; row.appendChild(usrAv()); row.appendChild(bbl); }
+      else { bbl.innerHTML = text.replace(/\n/g, "<br>"); row.appendChild(botAv()); row.appendChild(bbl); }
+      inner.appendChild(row);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    function showDots() {
+      rmWelcome();
+      var row = document.createElement("div"); row.className = "msg bot"; row.id = "typing";
+      var bbl = document.createElement("div"); bbl.className = "bbl";
+      bbl.innerHTML = '<div class="dots"><span></span><span></span><span></span></div>';
+      row.appendChild(botAv()); row.appendChild(bbl);
+      inner.appendChild(row); chat.scrollTop = chat.scrollHeight;
+    }
+
+    function hideDots() { var e = document.getElementById("typing"); if (e) e.remove(); }
+
+    function send() {
+      var text = inp.value.trim(); if (!text) return;
+      addMsg(text, true); inp.value = ""; inp.style.height = "auto";
+      sbtn.disabled = true; showDots();
+      fetch("/chat", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({message:text}) })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ hideDots(); addMsg(d.response || "Erreur.", false); })
+        .catch(function(){ hideDots(); addMsg("Erreur de connexion.", false); })
+        .finally(function(){ sbtn.disabled = false; inp.focus(); });
+    }
+  </script>
+</body>
+</html>
